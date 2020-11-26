@@ -1,0 +1,12 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "A simple client-authoritative server",
+  "main": "src/app.js",
+  "scripts": {},
+  "author": "Kurtis Knodel",
+  "license": "ISC",
+  "dependencies": {
+    "websocket": "^1.0.32"
+  }
+}
