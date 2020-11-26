@@ -60,7 +60,6 @@ function handleMessage(message, connection) {
 function isOriginOK(origin) {
 	//TODO: Check origin
 	logger.logError("isOriginOK not implemented!");
-	console.log(origin);
 	return true;
 }
 
