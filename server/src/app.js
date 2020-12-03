@@ -1,5 +1,7 @@
 const logger = require("./logger");
 const server = require("./server");
+const lobbymanager = require("./lobbymanager");
+
 const fs = require("fs");
 const readline = require("readline").createInterface({
 	input: process.stdin,
@@ -7,7 +9,8 @@ const readline = require("readline").createInterface({
 });
 
 const commands = {
-	stop: shutdown
+	"stop": shutdown,
+	"list lobbies": lobbymanager.listLobbies
 }
 
 const defaultConfig = {
