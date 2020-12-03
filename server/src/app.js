@@ -20,6 +20,7 @@ logger.logMessage(`Starting with log level ${config.logLevel}`);
 logger.setLogLevel(config.logLevel);
 
 server.start(config.port);
+logger.logMessage("To stop the server, type \"stop\"");
 readline.question("> ", processCommand);
 
 function processCommand(command) {
