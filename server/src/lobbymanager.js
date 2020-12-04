@@ -36,7 +36,12 @@ function createLobby(maxPlayers, id) {
 	return {
 		maxPlayers: maxPlayers,
 		currentPlayers: [],
-		lobbyId: id
+		lobbyId: id,
+		removePlayer: (player) => {
+			let index = currentPlayers.indexOf(player);
+			if(index < 0) return;
+			currentPlayers.splice(index, 1);
+		}
 	}
 }
 
@@ -45,5 +50,35 @@ function listLobbies() {
 	console.log(JSON.stringify(playerLobbies, null, "\t"));
 }
 
+function syncData(user, responseCode, data) {
+	if(user == undefined) {
+		logger.logWarning("Nonexistent user tried to sync data.");
+		return;
+	}
+
+	let key = user.key;
+	let buf = Buffer.alloc(1 + key.length + data.length); //Layout: Response code, from user, data
+	buf.writeUInt8(responseCode, 0);
+	buf.write(key, 1);
+	for(let i = 0; i < data.length; i++) {
+		buf.writeUInt8(data[i], i + 2);
+	}
+
+	let lobby = playerLobbies[key];
+	let players = lobby.currentPlayers;
+	for(let i = 0; i < players.length; i++) {
+		let currentPlayer = players[i];
+		if(currentPlayer != user) {
+			let conn = currentPlayer.getConnection();
+			conn.sendBytes(buf, (err) => {
+				logger.logInfo(`User disconnected: ${err}`);
+				currentPlayer.delete();
+				lobby.removePlayer(currentPlayer);
+			});
+		}
+	}
+}
+
 module.exports.joinOrCreateLobby = joinOrCreateLobby;
 module.exports.listLobbies = listLobbies;
+module.exports.syncData = syncData;

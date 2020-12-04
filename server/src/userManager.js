@@ -15,6 +15,14 @@ class User {
 	getKey() {
 		return this.key;
 	}
+
+	delete() {
+		userList[this.key] = undefined;
+		let index = userList.indexOf(this);
+		if(index >= 0) {
+			userList.splice(index, 1);
+		}
+	}
 }
 
 function generateSecretKey() {

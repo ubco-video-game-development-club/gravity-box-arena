@@ -8,6 +8,7 @@ const stringDecoder = new StringDecoder("utf8");
 const packetTypes = {
 	REQUEST_AUTH: 1,
 	REQUEST_JOIN_OR_CREATE_LOBBY: 2,
+	DATA_SYNC: 3,
 };
 
 const disconnectReasons = {
@@ -50,6 +51,8 @@ function parsePacket(packet, connection) {
 		case packetTypes.REQUEST_JOIN_OR_CREATE_LOBBY:
 			lobbymanager.joinOrCreateLobby(user, packetTypes.REQUEST_JOIN_OR_CREATE_LOBBY);
 			break;
+		case packetTypes.DATA_SYNC:
+			lobbymanager.syncData(user, packetTypes.DATA_SYNC, data);
 		default:
 			logger.logWarning(`Invalid packet type: ${packetType}`);
 			return false;
