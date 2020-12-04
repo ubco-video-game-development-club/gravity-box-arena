@@ -1,12 +1,11 @@
-const userlist = require("./userlist");
 const logger = require("./logger");
 
 var openLobbies = []; //Lobbies that can be joined
 var playerLobbies = { }; //Map of player ID to the lobby they're in
 
-function joinOrCreateLobby(connection, key, responseCode) {
-	if(!userlist.isUserAuthorized(key)) {
-		logger.logWarning("Unauthorized user tried to join or create a lobby.");
+function joinOrCreateLobby(user, responseCode) {
+	if(user == undefined) {
+		logger.logWarning("Nonexistent user tried to create a lobby.");
 		return;
 	}
 
@@ -25,7 +24,7 @@ function joinOrCreateLobby(connection, key, responseCode) {
 		}
 	}
 
-	playerLobbies[key] = lobby;
+	playerLobbies[user.key] = lobby;
 
 	let buffer = Buffer.alloc(5);
 	buffer.writeUInt8(responseCode, 0);
