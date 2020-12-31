@@ -5,6 +5,7 @@ using UnityEngine;
 public class Rocket : MonoBehaviour
 {
     [SerializeField] private GameObject explosionEffectPrefab;
+    [SerializeField] private GameObject explosionTextPrefab;
     [SerializeField] private float speed = 1;
     [SerializeField] private float explosionStrength = 1;
     [SerializeField] private float explosionRadius = 1;
@@ -76,6 +77,7 @@ public class Rocket : MonoBehaviour
 
         // Spawn explosion effect
         Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
+        Instantiate(explosionTextPrefab, transform.position, Quaternion.identity, HUD.Singleton.ExplosionTextParent);
 
         // Self destruct
         Destroy(gameObject);

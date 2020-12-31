@@ -10,6 +10,9 @@ public class HUD : MonoBehaviour
     public RectTransform HealthBarParent { get { return healthBarParent; } }
     [SerializeField] private RectTransform healthBarParent;
 
+    public RectTransform ExplosionTextParent { get { return explosionTextParent; } }
+    [SerializeField] private RectTransform explosionTextParent;
+
     void Awake()
     {
         if (Singleton != null)
