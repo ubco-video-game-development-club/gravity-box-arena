@@ -53,6 +53,7 @@ function parsePacket(packet, connection) {
 			break;
 		case packetTypes.DATA_SYNC:
 			lobbymanager.syncData(user, packetTypes.DATA_SYNC, data);
+			break;
 		default:
 			logger.logWarning(`Invalid packet type: ${packetType}`);
 			return false;
