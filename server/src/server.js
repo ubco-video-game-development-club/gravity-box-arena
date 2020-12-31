@@ -31,7 +31,7 @@ function start(port) {
 			return;
 		}
 
-		let connection = request.accept(null, request.origin);
+		let connection = request.accept(null, request.origin); //TODO: Custom protocol?
 		logger.logMessage(`Request accepted from ${request.origin}`);
 		connection.on("message", (message) => {
 			packethandler.handleMessage(message, connection);
