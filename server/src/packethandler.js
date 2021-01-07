@@ -70,8 +70,6 @@ function authorize(connection) {
 	buffer.writeUInt8(packetTypes.REQUEST_AUTH, 0);
 	buffer.write(key, 1);
 
-	console.log(stringDecoder.write(buffer.slice(1,6)));
-
 	connection.sendBytes(buffer);
 }
 

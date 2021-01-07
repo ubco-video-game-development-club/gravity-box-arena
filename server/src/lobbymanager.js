@@ -1,4 +1,5 @@
 const logger = require("./logger");
+const userManager = require("./userManager");
 
 var lobbyIdCounter = 0;
 var openLobbies = []; //Lobbies that can be joined
@@ -18,6 +19,9 @@ function joinOrCreateLobby(user, responseCode) {
 		openLobbies.push(lobby);
 	}
 
+	lobby.currentPlayers.push(user.key);
+	playerLobbies[user.key] = lobby;
+
 	if(lobby.currentPlayers.length >= lobby.maxPlayers) {
 		let index = openLobbies.indexOf(lobby);
 		if(index >= 0) {
@@ -25,12 +29,10 @@ function joinOrCreateLobby(user, responseCode) {
 		}
 	}
 
-	playerLobbies[user.key] = lobby;
-
 	let buffer = Buffer.alloc(5);
 	buffer.writeUInt8(responseCode, 0);
 	buffer.writeInt32BE(lobby.id, 1);
-	connection.sendBytes(buffer);
+	user.getConnection().sendBytes(buffer);
 }
 
 function createLobby(maxPlayers) {
@@ -73,7 +75,8 @@ function syncData(user, responseCode, data) {
 
 	let players = lobby.currentPlayers;
 	for(let i = 0; i < players.length; i++) {
-		let currentPlayer = players[i];
+		let playerKey = players[i];
+		let currentPlayer = userManager.getUser(playerKey);
 		if(currentPlayer != user) {
 			let conn = currentPlayer.getConnection();
 			conn.sendBytes(buf, (err) => {
