@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
@@ -13,12 +14,19 @@ public class LowLevelClient
 		SYNC_DATA = 3
 	}
 
+	public struct Message
+	{
+		public RequestHeader header;
+		public byte[] data;
+	}
+
 	public bool Connected { get { return connected; } }
 
 #if UNITY_EDITOR
 	private ClientWebSocket client;
 #endif
 
+	private Queue<Message> messageQueue;
 	private string hostname;
 	private bool connected;
 	private string key;
@@ -33,6 +41,8 @@ public class LowLevelClient
 		UnityEngine.Debug.LogError("TODO: Not implemented!");
 	#endif
 
+		messageQueue = new Queue<Message>();
+
 	}
 
 	public async void Connect()
@@ -46,6 +56,7 @@ public class LowLevelClient
 	#endif
 
 		connected = true;
+		HandleIncomingMessages();
 	}
 
 	public async Task<string> RequestAuth()
@@ -57,13 +68,11 @@ public class LowLevelClient
 		await SendData(buffer);
 
 		//Receive data
-		(int bytesRead, byte[] data) result = await ReceiveData();
-		int bytesRead = result.bytesRead;
-		buffer = result.data;
+		Message msg = await GetMessageOfType(RequestHeader.REQUEST_AUTH);
+		buffer = msg.data;
 
 		//Parse data
-		byte identifier = buffer[0];
-		key = Encoding.UTF8.GetString(buffer, 1, bytesRead - 1);
+		key = Encoding.UTF8.GetString(buffer, 0, 5);
 		return key;
 	}
 
@@ -81,19 +90,16 @@ public class LowLevelClient
 		await SendData(buffer);
 
 		//Receive data
-		(int bytesRead, byte[] data) result = await ReceiveData();
-		int bytesRead = result.bytesRead;
-		buffer = result.data;
+		Message msg = await GetMessageOfType(RequestHeader.REQUEST_JOIN_OR_CREATE_LOBBY);
+		buffer = msg.data;
 
 		//Parse data
-		byte identifier = buffer[0];
-		
 		if(BitConverter.IsLittleEndian)
 		{
-			Array.Reverse(buffer, 1, 4);
+			Array.Reverse(buffer, 0, 4);
 		}
 
-		int id = BitConverter.ToInt32(buffer, 1);
+		int id = BitConverter.ToInt32(buffer, 0);
 		return id;
 	}
 
@@ -125,6 +131,40 @@ public class LowLevelClient
 
 	}
 
+	private async Task<Message> GetMessageOfType(RequestHeader header)
+	{
+		return await Task.Run(() => {
+			while(messageQueue.Count < 1) ; //Wait until there are messages in the queue
+
+			Message msg = messageQueue.Peek();
+			while(msg.header != header) //Wait until the message we want is available
+			{
+				if(messageQueue.Count < 1) continue;
+				msg = messageQueue.Peek();
+			}
+
+			return messageQueue.Dequeue(); //Return it
+		});
+	}
+
+	private async void HandleIncomingMessages()
+	{
+		while(connected)
+		{
+			(int read, byte[] data) = await ReceiveData();
+			if(read < 1) continue;
+
+			RequestHeader header = (RequestHeader)data[0];
+			byte[] buffer = new byte[read - 1];
+			for(int i = 1; i < data.Length && i <= buffer.Length; i++) { buffer[i - 1] = data[i]; }
+
+			Message message = new Message();
+			message.header = header;
+			message.data = buffer;
+			messageQueue.Enqueue(message);
+		}
+	}
+
 	private async Task SendData(byte[] buffer)
 	{
 		if(!connected) return;
@@ -152,7 +192,7 @@ public class LowLevelClient
 	#else 
 		UnityEngine.Debug.Log("TODO: Not implemented!");
 	#endif
-	
+
 	}
 
 	private int HandleReceiveResult(WebSocketReceiveResult result)
