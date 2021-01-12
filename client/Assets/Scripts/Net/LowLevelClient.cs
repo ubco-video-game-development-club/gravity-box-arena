@@ -14,9 +14,11 @@ public class LowLevelClient
 	}
 
 	public bool Connected { get { return connected; } }
+
 #if UNITY_EDITOR
 	private ClientWebSocket client;
 #endif
+
 	private string hostname;
 	private bool connected;
 	private string key;
@@ -24,21 +26,25 @@ public class LowLevelClient
 	public LowLevelClient(string hostname) 
 	{
 		this.hostname = hostname;
+
 	#if UNITY_EDITOR
 		client = new ClientWebSocket();
 	#else
 		UnityEngine.Debug.LogError("TODO: Not implemented!");
 	#endif
+
 	}
 
 	public async void Connect()
 	{
+
 	#if UNITY_EDITOR
 		Uri host = new Uri(hostname);
 		await client.ConnectAsync(host, CancellationToken.None);
 	#else
 		UnityEngine.Debug.LogError("TODO: Not implemented!");
 	#endif
+
 		connected = true;
 	}
 
@@ -116,6 +122,7 @@ public class LowLevelClient
 	#else 
 		UnityEngine.Debug.LogError("TODO: Not implemented!");
 	#endif
+
 	}
 
 	private async Task SendData(byte[] buffer)
@@ -128,6 +135,7 @@ public class LowLevelClient
 	#else 
 		UnityEngine.Debug.Log("TODO: Not implemented!");
 	#endif
+
 	}
 
 	private async Task<(int, byte[])> ReceiveData()
@@ -144,6 +152,7 @@ public class LowLevelClient
 	#else 
 		UnityEngine.Debug.Log("TODO: Not implemented!");
 	#endif
+	
 	}
 
 	private int HandleReceiveResult(WebSocketReceiveResult result)
