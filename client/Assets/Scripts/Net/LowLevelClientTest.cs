@@ -20,6 +20,17 @@ public class LowLevelClientTest : MonoBehaviour
 		StartCoroutine(TestRequestAuth());
 	}
 
+	void Update()
+	{
+		if(client.TryGetData(out byte[] data))
+		{
+			foreach(byte b in data)
+			{
+				Debug.Log(b);
+			}
+		}
+	}
+
 	private IEnumerator TestRequestAuth()
 	{
 		yield return new WaitUntil(() => client.Connected);

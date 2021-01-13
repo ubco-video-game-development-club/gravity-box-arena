@@ -22,7 +22,7 @@ public class LowLevelClient
 
 	public bool Connected { get { return connected; } }
 
-#if UNITY_EDITOR
+#if UNITY_STANDALONE
 	private ClientWebSocket client;
 #endif
 
@@ -35,7 +35,7 @@ public class LowLevelClient
 	{
 		this.hostname = hostname;
 
-	#if UNITY_EDITOR
+	#if UNITY_STANDALONE
 		client = new ClientWebSocket();
 	#else
 		UnityEngine.Debug.LogError("TODO: Not implemented!");
@@ -48,7 +48,7 @@ public class LowLevelClient
 	public async void Connect()
 	{
 
-	#if UNITY_EDITOR
+	#if UNITY_STANDALONE
 		Uri host = new Uri(hostname);
 		await client.ConnectAsync(host, CancellationToken.None);
 	#else
@@ -122,13 +122,24 @@ public class LowLevelClient
 	{
 		if(!connected) return;
 
-	#if UNITY_EDITOR
+	#if UNITY_STANDALONE
 		client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client disconnected.", CancellationToken.None);
 		client.Dispose();
 	#else 
 		UnityEngine.Debug.LogError("TODO: Not implemented!");
 	#endif
 
+	}
+
+	public bool TryGetData(out byte[] data)
+	{
+		data = null;
+		if(messageQueue.Count < 1) return false;
+		if(messageQueue.Peek().header != RequestHeader.SYNC_DATA) return false;
+
+		Message message = messageQueue.Dequeue();
+		data = message.data;
+		return true;
 	}
 
 	private async Task<Message> GetMessageOfType(RequestHeader header)
@@ -158,7 +169,7 @@ public class LowLevelClient
 
 			RequestHeader header = (RequestHeader)data[0];
 			byte[] buffer = new byte[read - 1];
-			for(int i = 1; i < data.Length && i <= buffer.Length; i++) { buffer[i - 1] = data[i]; }
+			for(int i = 0; i < buffer.Length; i++) { buffer[i] = data[i + 1]; }
 
 			Message message = new Message();
 			message.header = header;
@@ -171,7 +182,7 @@ public class LowLevelClient
 	{
 		if(!connected) return;
 
-	#if UNITY_EDITOR
+	#if UNITY_STANDALONE
 		ArraySegment<byte> segment = new ArraySegment<byte>(buffer);
 		await client.SendAsync(segment, WebSocketMessageType.Binary, true, CancellationToken.None);
 	#else 
@@ -184,7 +195,7 @@ public class LowLevelClient
 	{
 		if(!connected) return (-1, null);
 
-	#if UNITY_EDITOR
+	#if UNITY_STANDALONE
 		byte[] buffer = new byte[32];
 		ArraySegment<byte> segment = new ArraySegment<byte>(buffer);
 		WebSocketReceiveResult result = await client.ReceiveAsync(segment, CancellationToken.None);
