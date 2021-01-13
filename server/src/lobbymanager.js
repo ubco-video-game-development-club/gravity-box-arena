@@ -15,7 +15,7 @@ function joinOrCreateLobby(user, responseCode) {
 	if(openLobbies.length > 0) {
 		lobby = openLobbies[0];
 	} else {
-		lobby = createLobby(4);
+		lobby = new Lobby(4);
 		openLobbies.push(lobby);
 	}
 
@@ -33,19 +33,6 @@ function joinOrCreateLobby(user, responseCode) {
 	buffer.writeUInt8(responseCode, 0);
 	buffer.writeInt32BE(lobby.id, 1);
 	user.getConnection().sendBytes(buffer);
-}
-
-function createLobby(maxPlayers) {
-	return {
-		maxPlayers: maxPlayers,
-		currentPlayers: [],
-		lobbyId: lobbyIdCounter++,
-		removePlayer: (player) => {
-			let index = currentPlayers.indexOf(player);
-			if(index < 0) return;
-			currentPlayers.splice(index, 1);
-		}
-	}
 }
 
 function listLobbies() {
@@ -85,6 +72,20 @@ function syncData(user, responseCode, data) {
 				lobby.removePlayer(currentPlayer);
 			});
 		}
+	}
+}
+
+class Lobby {
+	constructor(maxPlayers) {
+		this.maxPlayers = maxPlayers;
+		this.currentPlayers = [];
+		this.lobbyId = lobbyIdCounter++;
+	}
+
+	removePlayer(player) {
+		let index = this.currentPlayers.indexOf(player);
+		if(index < 0) return;
+		currentPlayers.splice(index, 1);
 	}
 }
 
