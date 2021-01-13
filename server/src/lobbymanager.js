@@ -80,7 +80,7 @@ function syncData(user, responseCode, data) {
 		if(currentPlayer != user) {
 			let conn = currentPlayer.getConnection();
 			conn.sendBytes(buf, (err) => {
-				logger.logInfo(`User disconnected: ${err}`);
+				logger.logMessage(`User disconnected: ${err}`);
 				currentPlayer.delete();
 				lobby.removePlayer(currentPlayer);
 			});
