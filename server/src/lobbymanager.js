@@ -51,7 +51,7 @@ function syncData(user, responseCode, data) {
 	buf.writeUInt8(responseCode, 0);
 	buf.write(key, 1);
 	for(let i = 0; i < data.length; i++) {
-		buf.writeUInt8(data[i], i + 2);
+		buf.writeUInt8(data[i], i + 6);
 	}
 
 	let lobby = playerLobbies[key];
