@@ -24,6 +24,8 @@ public class LowLevelClient
 
 #if UNITY_STANDALONE
 	private ClientWebSocket client;
+#else
+	private WebSocketClientJS jsClient;
 #endif
 
 	private Queue<Message> messageQueue;
@@ -38,7 +40,8 @@ public class LowLevelClient
 	#if UNITY_STANDALONE
 		client = new ClientWebSocket();
 	#else
-		UnityEngine.Debug.LogError("TODO: Not implemented!");
+		jsClient = new WebSocketClientJS();
+		jsClient.SendAlert("Hello world!");
 	#endif
 
 		messageQueue = new Queue<Message>();
@@ -204,10 +207,12 @@ public class LowLevelClient
 		return (bytesRead, buffer);
 	#else 
 		UnityEngine.Debug.Log("TODO: Not implemented!");
+		return(0, null);
 	#endif
 
 	}
 
+#if UNITY_STANDALONE
 	private int HandleReceiveResult(WebSocketReceiveResult result)
 	{
 		if(result.CloseStatus != null)
@@ -226,4 +231,5 @@ public class LowLevelClient
 
 		return result.Count;
 	}
+#endif
 }
