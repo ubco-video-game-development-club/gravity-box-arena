@@ -133,18 +133,20 @@ public class LowLevelClient
 
 	private async Task<Message> GetMessageOfType(RequestHeader header)
 	{
-		return await Task.Run(() => {
-			while(messageQueue.Count < 1) ; //Wait until there are messages in the queue
+		while(messageQueue.Count < 1) //Wait until there are messages in the queue
+		{
+			await Task.Delay(20);
+		}
 
-			Message msg = messageQueue.Peek();
-			while(msg.header != header) //Wait until the message we want is available
-			{
-				if(messageQueue.Count < 1) continue;
-				msg = messageQueue.Peek();
-			}
+		Message msg = messageQueue.Peek();
+		while(msg.header != header) //Wait until the message we want is available
+		{
+			if(messageQueue.Count < 1) continue;
+			await Task.Delay(20);
+			msg = messageQueue.Peek();
+		}
 
-			return messageQueue.Dequeue(); //Return it
-		});
+		return messageQueue.Dequeue(); //Return it
 	}
 
 	private async void HandleIncomingMessages()
