@@ -22,8 +22,9 @@ public class LowLevelClientTest : MonoBehaviour
 
 	void Update()
 	{
-		if(client.TryGetData(out byte[] data))
+		if(client.TryGetData(out string key, out byte[] data))
 		{
+			Debug.Log($"Received data from {key}");
 			foreach(byte b in data)
 			{
 				Debug.Log(b);

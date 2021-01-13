@@ -51,7 +51,7 @@ function syncData(user, responseCode, data) {
 	buf.writeUInt8(responseCode, 0);
 	buf.write(key, 1);
 	for(let i = 0; i < data.length; i++) {
-		buf.writeUInt8(data[i], i + 2);
+		buf.writeUInt8(data[i], i + 6);
 	}
 
 	let lobby = playerLobbies[key];
@@ -65,6 +65,12 @@ function syncData(user, responseCode, data) {
 		let playerKey = players[i];
 		let currentPlayer = userManager.getUser(playerKey);
 		if(currentPlayer != user) {
+			if(currentPlayer == undefined) {
+				lobby.removePlayer(playerKey);
+				logger.logMessage("User was undefined and removed from the lobby.");
+				continue;
+			}
+
 			let conn = currentPlayer.getConnection();
 			conn.sendBytes(buf, (err) => {
 				logger.logMessage(`User disconnected: ${err}`);

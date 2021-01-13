@@ -134,14 +134,22 @@ public class LowLevelClient
 
 	}
 
-	public bool TryGetData(out byte[] data)
+	public bool TryGetData(out string key, out byte[] data)
 	{
+		key = null;
 		data = null;
 		if(messageQueue.Count < 1) return false;
 		if(messageQueue.Peek().header != RequestHeader.SYNC_DATA) return false;
 
 		Message message = messageQueue.Dequeue();
-		data = message.data;
+		key = Encoding.UTF8.GetString(message.data, 0, 5);
+		
+		data = new byte[message.data.Length - 5];
+		for(int i = 0; i < data.Length; i++)
+		{
+			data[i] = message.data[i + 5];
+		}
+
 		return true;
 	}
 
