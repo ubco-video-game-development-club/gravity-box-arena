@@ -34,10 +34,15 @@ public class LowLevelClientTest : MonoBehaviour
 
 	private IEnumerator TestRequestAuth()
 	{
+		client.SendAlert("Waiting for connection...");
 		yield return new WaitUntil(() => client.Connected);
+		client.SendAlert("Connection complete");
 		Task<string> requestTask = client.RequestAuth();
+		client.SendAlert("Waiting for auth...");
 		yield return new WaitUntil(() => requestTask.IsCompleted);
+		client.SendAlert("Auth complete");
 		string key = requestTask.Result;
+		client.SendAlert("Key: " + key);
 		Debug.Log(key);
 
 		StartCoroutine(TestJoinOrCreateLobby());

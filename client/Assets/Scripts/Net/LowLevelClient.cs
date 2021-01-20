@@ -48,6 +48,13 @@ public class LowLevelClient
 
 	}
 
+#if !UNITY_STANDALONE
+	public void SendAlert(string msg)
+	{
+		jsClient.SendAlert(msg);
+	}
+#endif
+
 	public async void Connect()
 	{
 
@@ -55,7 +62,7 @@ public class LowLevelClient
 		Uri host = new Uri(hostname);
 		await client.ConnectAsync(host, CancellationToken.None);
 	#else
-		UnityEngine.Debug.LogError("TODO: Not implemented!");
+		jsClient.Connect(hostname);
 	#endif
 
 		connected = true;
@@ -129,7 +136,7 @@ public class LowLevelClient
 		client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client disconnected.", CancellationToken.None);
 		client.Dispose();
 	#else 
-		UnityEngine.Debug.LogError("TODO: Not implemented!");
+		jsClient.Close();
 	#endif
 
 	}
@@ -197,7 +204,7 @@ public class LowLevelClient
 		ArraySegment<byte> segment = new ArraySegment<byte>(buffer);
 		await client.SendAsync(segment, WebSocketMessageType.Binary, true, CancellationToken.None);
 	#else 
-		UnityEngine.Debug.Log("TODO: Not implemented!");
+		jsClient.SendData(buffer);
 	#endif
 
 	}
