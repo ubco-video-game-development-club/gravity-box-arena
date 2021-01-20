@@ -72,7 +72,7 @@ public class Leaderboard : MonoBehaviour
 
             yield return request.SendWebRequest();
 
-            if (request.isHttpError || request.isNetworkError)
+            if (request.result == UnityWebRequest.Result.ProtocolError || request.result == UnityWebRequest.Result.ConnectionError)
             {
                 Debug.LogError(request.error);
             }
@@ -91,7 +91,7 @@ public class Leaderboard : MonoBehaviour
 
             yield return request.SendWebRequest();
 
-            if(request.isHttpError || request.isNetworkError)
+            if(request.result == UnityWebRequest.Result.ProtocolError || request.result == UnityWebRequest.Result.ConnectionError)
             {
                 Debug.LogError(request.error);
             } else
@@ -151,7 +151,7 @@ public class Leaderboard : MonoBehaviour
 
             yield return request.SendWebRequest();
 
-            if (request.isHttpError || request.isNetworkError)
+            if (request.result == UnityWebRequest.Result.ProtocolError || request.result == UnityWebRequest.Result.ConnectionError)
             {
                 Debug.LogError(request.error);
             }

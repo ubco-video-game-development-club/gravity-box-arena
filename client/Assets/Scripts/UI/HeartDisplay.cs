@@ -19,7 +19,9 @@ public class HeartDisplay : MonoBehaviour
 
     void Start()
     {
-        Player player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        Player player = GameObject.FindGameObjectWithTag("Player")?.GetComponent<Player>();
+		if(player == null) return;
+
         player.AddHealthChangedListener(UpdateHeartDisplay);
 
         float spawnX = 0;

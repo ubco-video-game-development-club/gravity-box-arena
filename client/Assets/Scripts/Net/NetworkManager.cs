@@ -7,6 +7,13 @@ using UnityEngine.Events;
 
 public class NetworkManager : MonoBehaviour
 {
+	public const int NETWORK_MANAGER_NET_ID = -1;
+
+	private enum InternalFunction
+	{
+		Instantiate = 0,
+	}
+
 	public static NetworkManager Singleton { get { return singleton; } }
 	private static NetworkManager singleton = null;
 
@@ -20,10 +27,11 @@ public class NetworkManager : MonoBehaviour
 	[SerializeField] private UnityEvent onConnected;
 	[SerializeField] private UnityEvent onDisconnect;
 	[SerializeField] private UnityEvent onJoinedLobby;
+	[SerializeField] private bool dontDestroyOnLoad = false;
     private LowLevelClient client;
 	private string authKey;
 	private int lobbyId;
-	private List<NetworkObject> trackedObjects;
+	private Dictionary<int, NetworkObject> trackedObjects;
 
 	void Awake()
 	{
@@ -36,7 +44,9 @@ public class NetworkManager : MonoBehaviour
 		singleton = this;
 		client = new LowLevelClient(hostname);
 		lobbyId = -1;
-		trackedObjects = new List<NetworkObject>();
+		trackedObjects = new Dictionary<int, NetworkObject>();
+
+		if(dontDestroyOnLoad) DontDestroyOnLoad(this);
 
 		StartCoroutine(NetworkUpdate());
 	}
@@ -64,8 +74,27 @@ public class NetworkManager : MonoBehaviour
 		StartCoroutine(JoinOrCreateLobbyRoutine());
 	}
 
-	public void Track(NetworkObject obj) => trackedObjects.Add(obj);
-	public void Untrack(NetworkObject obj) => trackedObjects.Remove(obj);
+	public void NetworkInstantiate(string resource, Vector2 position, float rotation)
+	{
+		using(MemoryStream mStream = new MemoryStream())
+		{
+			using(BinaryWriter writer = new BinaryWriter(mStream))
+			{
+				writer.Write(NETWORK_MANAGER_NET_ID);
+				writer.Write((byte)InternalFunction.Instantiate);
+				writer.Write(resource);
+				writer.Write(position.x);
+				writer.Write(position.y);
+				writer.Write(rotation);
+			}
+
+			byte[] buffer = mStream.ToArray();
+			client.SyncData(buffer);
+		}
+	}
+
+	public void Track(NetworkObject obj) => trackedObjects.Add(obj.Id, obj);
+	public void Untrack(NetworkObject obj) => trackedObjects.Remove(obj.Id);
 
 	private IEnumerator NetworkUpdate()
 	{
@@ -77,7 +106,7 @@ public class NetworkManager : MonoBehaviour
 			{
 				using(BinaryWriter writer = new BinaryWriter(mStream))
 				{
-					foreach(NetworkObject obj in trackedObjects)
+					foreach(NetworkObject obj in trackedObjects.Values)
 					{
 						writer.Write(obj.Id);
 						obj.SendData(writer);
@@ -95,11 +124,59 @@ public class NetworkManager : MonoBehaviour
 					mStream.Write(data, 0, data.Length);
 				}
 
-				//TODO: Send data to networked objects
+				using(BinaryReader reader = new BinaryReader(mStream))
+				{
+					bool endOfStream = false;
+					while(!endOfStream)
+					{
+						try
+						{
+							int id = reader.ReadInt32();
+							if(id == NETWORK_MANAGER_NET_ID)
+							{
+								HandleInternalFunctions(reader);
+								continue;
+							}
+
+							NetworkObject obj = trackedObjects[id];
+							obj.ReceiveData(reader);
+						} catch(System.Exception)
+						{
+							endOfStream = true;
+						}
+					}
+				}
 			}
 
 			yield return waitForSeconds;
 		}
+	}
+
+	private void HandleInternalFunctions(BinaryReader reader)
+	{
+		InternalFunction func = (InternalFunction)reader.ReadByte();
+		switch(func)
+		{
+			case InternalFunction.Instantiate:
+				InstantiateInternal(reader);
+				break;
+			default:
+				Debug.LogError("Internal function does not exist!");
+				break;
+		}
+	}
+
+	private void InstantiateInternal(BinaryReader reader)
+	{
+		string resource = reader.ReadString();
+		float x = reader.ReadSingle();
+		float y = reader.ReadSingle();
+		float r = reader.ReadSingle();
+
+		GameObject obj = Resources.Load(resource) as GameObject;
+		Vector3 pos = new Vector3(x, y, 0);
+		Quaternion rot = Quaternion.AngleAxis(r, Vector3.forward);
+		Instantiate(obj, pos, rot);
 	}
 
 	private IEnumerator JoinOrCreateLobbyRoutine()

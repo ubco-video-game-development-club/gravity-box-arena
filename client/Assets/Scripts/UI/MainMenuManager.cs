@@ -26,6 +26,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Slider sfxVolumeSlider;
     [SerializeField] private Slider uiVolumeSlider;
     [SerializeField] private TMPro.TMP_InputField leaderboardNameInput;
+	[SerializeField] private TMPro.TextMeshProUGUI lobbyStatusText;
 
     void Start()
     {
@@ -69,6 +70,11 @@ public class MainMenuManager : MonoBehaviour
         Leaderboard.username = value;
         PlayerPrefs.SetString(LEADERBOARD_NAME_PREF, value);
     }
+
+	public void SetLobbyStatusText(string value)
+	{
+		lobbyStatusText.text = value;
+	}
 
     private void SetLeaderboardName()
     {
