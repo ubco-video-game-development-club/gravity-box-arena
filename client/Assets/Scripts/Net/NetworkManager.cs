@@ -27,6 +27,7 @@ public class NetworkManager : MonoBehaviour
 	[SerializeField] private UnityEvent onConnected;
 	[SerializeField] private UnityEvent onDisconnect;
 	[SerializeField] private UnityEvent onJoinedLobby;
+	[SerializeField] private bool dontDestroyOnLoad = false;
     private LowLevelClient client;
 	private string authKey;
 	private int lobbyId;
@@ -44,6 +45,8 @@ public class NetworkManager : MonoBehaviour
 		client = new LowLevelClient(hostname);
 		lobbyId = -1;
 		trackedObjects = new Dictionary<int, NetworkObject>();
+
+		if(dontDestroyOnLoad) DontDestroyOnLoad(this);
 
 		StartCoroutine(NetworkUpdate());
 	}
