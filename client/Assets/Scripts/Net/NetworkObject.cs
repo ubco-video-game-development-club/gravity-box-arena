@@ -36,4 +36,5 @@ public class NetworkObject : MonoBehaviour
 
 	public void SendData(BinaryWriter writer) => onSendData.Invoke(writer);
 	public void ReceiveData(BinaryReader reader) => onReceiveData.Invoke(reader);
+	public void NetworkInstantiate(string resource, Vector2 position, float rotation) => NetworkManager.Singleton.NetworkInstantiate(resource, position, rotation);
 }
