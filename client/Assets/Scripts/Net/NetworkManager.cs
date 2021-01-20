@@ -88,7 +88,7 @@ public class NetworkManager : MonoBehaviour
 				client.SyncData(buffer);
 			}
 
-			using(MemoryStream mStream)
+			using(MemoryStream mStream = new MemoryStream())
 			{
 				while(client.TryGetData(out string from, out byte[] data))
 				{
@@ -97,6 +97,8 @@ public class NetworkManager : MonoBehaviour
 
 				//TODO: Send data to networked objects
 			}
+
+			yield return waitForSeconds;
 		}
 	}
 
