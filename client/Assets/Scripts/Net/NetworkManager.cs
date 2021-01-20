@@ -23,7 +23,7 @@ public class NetworkManager : MonoBehaviour
     private LowLevelClient client;
 	private string authKey;
 	private int lobbyId;
-	private List<NetworkObject> trackedObjects;
+	private Dictionary<int, NetworkObject> trackedObjects;
 
 	void Awake()
 	{
@@ -36,7 +36,7 @@ public class NetworkManager : MonoBehaviour
 		singleton = this;
 		client = new LowLevelClient(hostname);
 		lobbyId = -1;
-		trackedObjects = new List<NetworkObject>();
+		trackedObjects = new Dictionary<int, NetworkObject>();
 
 		StartCoroutine(NetworkUpdate());
 	}
@@ -64,8 +64,8 @@ public class NetworkManager : MonoBehaviour
 		StartCoroutine(JoinOrCreateLobbyRoutine());
 	}
 
-	public void Track(NetworkObject obj) => trackedObjects.Add(obj);
-	public void Untrack(NetworkObject obj) => trackedObjects.Remove(obj);
+	public void Track(NetworkObject obj) => trackedObjects.Add(obj.Id, obj);
+	public void Untrack(NetworkObject obj) => trackedObjects.Remove(obj.Id);
 
 	private IEnumerator NetworkUpdate()
 	{
@@ -77,7 +77,7 @@ public class NetworkManager : MonoBehaviour
 			{
 				using(BinaryWriter writer = new BinaryWriter(mStream))
 				{
-					foreach(NetworkObject obj in trackedObjects)
+					foreach(NetworkObject obj in trackedObjects.Values)
 					{
 						writer.Write(obj.Id);
 						obj.SendData(writer);
@@ -95,7 +95,22 @@ public class NetworkManager : MonoBehaviour
 					mStream.Write(data, 0, data.Length);
 				}
 
-				//TODO: Send data to networked objects
+				using(BinaryReader reader = new BinaryReader(mStream))
+				{
+					bool endOfStream = false;
+					while(!endOfStream)
+					{
+						try
+						{
+							int id = reader.ReadInt32();
+							NetworkObject obj = trackedObjects[id];
+							obj.ReceiveData(reader);
+						} catch(System.Exception)
+						{
+							endOfStream = true;
+						}
+					}
+				}
 			}
 
 			yield return waitForSeconds;
