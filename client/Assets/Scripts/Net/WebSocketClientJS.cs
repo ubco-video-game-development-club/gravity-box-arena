@@ -1,11 +1,14 @@
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 public class WebSocketClientJS
 {
     [DllImport("__Internal")]
     private static extern void _SendAlert(string msg);
     [DllImport("__Internal")]
-    private static extern void _Connect(string url);
+    private static extern void _ConnectTwo(string url);
+    [DllImport("__Internal")]
+    private static extern void _PeePeePooPoo(string url);
     [DllImport("__Internal")]
     private static extern void _Close();
     [DllImport("__Internal")]
@@ -16,21 +19,25 @@ public class WebSocketClientJS
         _SendAlert(msg);
     }
 
-    public void Connect(string url)
+    public async Task Connect(string url)
     {
-        SendAlert("Connect");
-        _Connect(url);
+        UnityEngine.Debug.Log("Connect Start");
+        _SendAlert(url);
+        _PeePeePooPoo(url);
+        // NOTE: _PeePeePooPoo doesn't get called here, and never seems to continue
+        await Task.Run(() => _PeePeePooPoo(url));
+        UnityEngine.Debug.Log("Connect Complete");
     }
 
     public void Close()
     {
-        SendAlert("Close");
+        UnityEngine.Debug.Log("Close");
         _Close();
     }
 
-    public void SendData(byte[] arr)
+    public async Task SendData(byte[] arr)
     {
-        SendAlert("SendData");
-        _SendData(arr, arr.Length);
+        UnityEngine.Debug.Log("SendData");
+        await Task.Run(() => _SendData(arr, arr.Length));
     }
 }

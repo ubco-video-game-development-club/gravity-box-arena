@@ -41,7 +41,7 @@ public class LowLevelClient
 		client = new ClientWebSocket();
 	#else
 		jsClient = new WebSocketClientJS();
-		jsClient.SendAlert("Hello world!");
+		UnityEngine.Debug.Log("Hello world!");
 	#endif
 
 		messageQueue = new Queue<Message>();
@@ -62,10 +62,13 @@ public class LowLevelClient
 		Uri host = new Uri(hostname);
 		await client.ConnectAsync(host, CancellationToken.None);
 	#else
-		jsClient.Connect(hostname);
+		await jsClient.Connect(hostname);
+		UnityEngine.Debug.Log("Connected!");
 	#endif
 
 		connected = true;
+		UnityEngine.Debug.Log(connected);
+		UnityEngine.Debug.Log($"connected = {connected}");
 		HandleIncomingMessages();
 	}
 
@@ -180,6 +183,7 @@ public class LowLevelClient
 
 	private async void HandleIncomingMessages()
 	{
+		UnityEngine.Debug.Log("Handling incoming!");
 		while(connected)
 		{
 			(int read, byte[] data) = await ReceiveData();
@@ -204,7 +208,7 @@ public class LowLevelClient
 		ArraySegment<byte> segment = new ArraySegment<byte>(buffer);
 		await client.SendAsync(segment, WebSocketMessageType.Binary, true, CancellationToken.None);
 	#else 
-		jsClient.SendData(buffer);
+		await jsClient.SendData(buffer);
 	#endif
 
 	}
@@ -222,6 +226,7 @@ public class LowLevelClient
 		return (bytesRead, buffer);
 	#else 
 		UnityEngine.Debug.Log("TODO: Not implemented!");
+		await Task.Run(() => UnityEngine.Debug.Log("Replace this"));
 		return(0, null);
 	#endif
 

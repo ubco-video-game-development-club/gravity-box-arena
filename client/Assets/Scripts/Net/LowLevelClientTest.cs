@@ -16,7 +16,9 @@ public class LowLevelClientTest : MonoBehaviour
 
 	void Start()
 	{
+		UnityEngine.Debug.Log("Starting up!");
 		client.Connect();
+		UnityEngine.Debug.Log("Finished connect.");
 		StartCoroutine(TestRequestAuth());
 	}
 
@@ -34,15 +36,15 @@ public class LowLevelClientTest : MonoBehaviour
 
 	private IEnumerator TestRequestAuth()
 	{
-		client.SendAlert("Waiting for connection...");
+		UnityEngine.Debug.Log("Waiting for connection...");
 		yield return new WaitUntil(() => client.Connected);
-		client.SendAlert("Connection complete");
+		UnityEngine.Debug.Log("Connection complete");
 		Task<string> requestTask = client.RequestAuth();
-		client.SendAlert("Waiting for auth...");
+		UnityEngine.Debug.Log("Waiting for auth...");
 		yield return new WaitUntil(() => requestTask.IsCompleted);
-		client.SendAlert("Auth complete");
+		UnityEngine.Debug.Log("Auth complete");
 		string key = requestTask.Result;
-		client.SendAlert("Key: " + key);
+		UnityEngine.Debug.Log("Key: " + key);
 		Debug.Log(key);
 
 		StartCoroutine(TestJoinOrCreateLobby());
