@@ -48,12 +48,12 @@ public class LowLevelClient
 
 	}
 
-#if !UNITY_STANDALONE
 	public void SendAlert(string msg)
 	{
+	#if !UNITY_STANDALONE
 		jsClient.SendAlert(msg);
+	#endif
 	}
-#endif
 
 	public async void Connect()
 	{
