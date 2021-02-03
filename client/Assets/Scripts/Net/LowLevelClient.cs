@@ -62,8 +62,9 @@ public class LowLevelClient
 		Uri host = new Uri(hostname);
 		await client.ConnectAsync(host, CancellationToken.None);
 	#else
-		await jsClient.Connect(hostname);
+		jsClient.Connect(hostname);
 		UnityEngine.Debug.Log("Connected!");
+		await Task.Delay(3);
 	#endif
 
 		connected = true;

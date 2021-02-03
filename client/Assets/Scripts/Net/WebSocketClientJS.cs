@@ -6,9 +6,7 @@ public class WebSocketClientJS
     [DllImport("__Internal")]
     private static extern void _SendAlert(string msg);
     [DllImport("__Internal")]
-    private static extern void _ConnectTwo(string url);
-    [DllImport("__Internal")]
-    private static extern void _PeePeePooPoo(string url);
+    private static extern void _Connect(string url);
     [DllImport("__Internal")]
     private static extern void _Close();
     [DllImport("__Internal")]
@@ -19,13 +17,10 @@ public class WebSocketClientJS
         _SendAlert(msg);
     }
 
-    public async Task Connect(string url)
+    public void Connect(string url)
     {
         UnityEngine.Debug.Log("Connect Start");
-        _SendAlert(url);
-        _PeePeePooPoo(url);
-        // NOTE: _PeePeePooPoo doesn't get called here, and never seems to continue
-        await Task.Run(() => _PeePeePooPoo(url));
+        _Connect(url);
         UnityEngine.Debug.Log("Connect Complete");
     }
 
@@ -37,7 +32,9 @@ public class WebSocketClientJS
 
     public async Task SendData(byte[] arr)
     {
-        UnityEngine.Debug.Log("SendData");
-        await Task.Run(() => _SendData(arr, arr.Length));
+        UnityEngine.Debug.Log("Start SendData");
+        _SendData(arr, arr.Length);
+        UnityEngine.Debug.Log("Finish SendData");
+        await Task.Delay(5);
     }
 }

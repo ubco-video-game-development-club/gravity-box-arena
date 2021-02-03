@@ -9,18 +9,8 @@ mergeInto(LibraryManager.library, {
     this.webSocket = new WebSocket(Pointer_stringify(url));
   },
 
-  _ConnectTwo: function(url) {
-    console.log("javascript connect two");
-    window.alert(Pointer_stringify(url));
-    this.webSocket = new WebSocket(Pointer_stringify(url));
-  },
-
-  _PeePeePooPoo: function(msg) {
-    window.alert(Pointer_stringify(msg));
-  },
-
   _Close: function() {
-    window.alert(this.webSocket);
+    console.log(this.webSocket);
     this.webSocket.close();
   },
 
