@@ -12,7 +12,10 @@ public class NetworkManager : MonoBehaviour
 	private enum InternalFunction
 	{
 		Instantiate = 0,
+		Message = 1,
 	}
+
+	[System.Serializable] public class OnMessageReceivedEvent: UnityEvent<byte, string> { }
 
 	public static NetworkManager Singleton { get { return singleton; } }
 	private static NetworkManager singleton = null;
@@ -21,12 +24,14 @@ public class NetworkManager : MonoBehaviour
 	public UnityEvent OnConnected { get { return onConnected; } }
 	public UnityEvent OnDisconnect { get { return onDisconnect; } }
 	public UnityEvent OnJoinedLobby { get { return onJoinedLobby; } }
+	public OnMessageReceivedEvent OnMessageReceived { get { return onMessageReceived; } }
 
 	[SerializeField] private string hostname;
 	[SerializeField] private float networkDelta;
 	[SerializeField] private UnityEvent onConnected;
 	[SerializeField] private UnityEvent onDisconnect;
 	[SerializeField] private UnityEvent onJoinedLobby;
+	[SerializeField] private OnMessageReceivedEvent onMessageReceived;
 	[SerializeField] private bool dontDestroyOnLoad = false;
     private LowLevelClient client;
 	private string authKey;
@@ -86,6 +91,23 @@ public class NetworkManager : MonoBehaviour
 				writer.Write(position.x);
 				writer.Write(position.y);
 				writer.Write(rotation);
+			}
+
+			byte[] buffer = mStream.ToArray();
+			client.SyncData(buffer);
+		}
+	}
+
+	public void SendMessage(byte type, string message)
+	{
+		using(MemoryStream mStream = new MemoryStream())
+		{
+			using(BinaryWriter writer = new BinaryWriter(mStream))
+			{
+				writer.Write(NETWORK_MANAGER_NET_ID);
+				writer.Write((byte)InternalFunction.Message);
+				writer.Write(type);
+				writer.Write(message);
 			}
 
 			byte[] buffer = mStream.ToArray();
@@ -160,10 +182,20 @@ public class NetworkManager : MonoBehaviour
 			case InternalFunction.Instantiate:
 				InstantiateInternal(reader);
 				break;
+			case InternalFunction.Message:
+				MessageInternal(reader);
+				break;
 			default:
 				Debug.LogError("Internal function does not exist!");
 				break;
 		}
+	}
+
+	private void MessageInternal(BinaryReader reader)
+	{
+		byte type = reader.ReadByte();
+		string message = reader.ReadString();
+		onMessageReceived.Invoke(type, message);
 	}
 
 	private void InstantiateInternal(BinaryReader reader)

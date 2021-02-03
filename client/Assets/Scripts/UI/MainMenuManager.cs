@@ -7,6 +7,8 @@ using UnityEngine.Audio;
 
 public class MainMenuManager : MonoBehaviour
 {
+	public const byte PLAYER_JOINED_MESSAGE_ID = 0;
+
     private const string MASTER_VOL_PREF = "settings.mastervolume",
         MUSIC_VOL_PREF = "settings.musicvolume",
         SFX_VOL_PREF = "settings.sfxvolume",
@@ -27,6 +29,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Slider uiVolumeSlider;
     [SerializeField] private TMPro.TMP_InputField leaderboardNameInput;
 	[SerializeField] private TMPro.TextMeshProUGUI lobbyStatusText;
+	[SerializeField] private TMPro.TextMeshProUGUI lobbyPlayerListText;
 
     void Start()
     {
@@ -74,6 +77,20 @@ public class MainMenuManager : MonoBehaviour
 	public void SetLobbyStatusText(string value)
 	{
 		lobbyStatusText.text = value;
+	}
+
+	public void OnMessageReceived(byte type, string value)
+	{
+		if(type == PLAYER_JOINED_MESSAGE_ID)
+		{
+			lobbyPlayerListText.text += value + "\n"; //Add the player name to the list
+		}
+	}
+
+	public void OnJoinedLobby()
+	{
+		lobbyPlayerListText.text += Leaderboard.username + "\n"; //Add ourselves to the list
+		NetworkManager.Singleton.SendMessage(PLAYER_JOINED_MESSAGE_ID, Leaderboard.username);
 	}
 
     private void SetLeaderboardName()
